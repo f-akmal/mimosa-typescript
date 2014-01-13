@@ -17,7 +17,8 @@
   "keywords": [
     "mimosa",
     "mmodule",
-    "typescript"
+    "typescript",
+    "compiler"
   ],
   "dependencies": {
     "logmimosa": "0.6.0"
