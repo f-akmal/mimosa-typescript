@@ -2,13 +2,14 @@
 
 var fs = require( "fs" )
   , path = require( "path" )
-  , logger = require( "logmimosa" )
+  , logger = null
   , config = require( './config' )
   , io = null
   , TypeScript = null
   , compilationSettings = null
   , defaultLibPath = null
   , getExtensions = function ( mimosaConfig ) {
+    logger = mimosaConfig.log;
     return mimosaConfig.typescript.extensions;
   };
 
