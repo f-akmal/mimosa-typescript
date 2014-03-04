@@ -10,11 +10,11 @@ exports.defaults = function() {
 };
 
 exports.placeholder = function() {
-  return "\t\n\n"+
-         "  # typescript:              # config settings for the TypeScript compiler module\n" +
-         "    # extensions: [\"ts\"]     # default extensions for TypeScript files\n" +
-         "    # module: null           # how compiled tyepscript is wrapped, defaults to no wrapping,\n" +
-         "                             # can be \"amd\" or \"commonjs\"\n";
+  return "\t\n\n" +
+         "  typescript:              # config settings for the TypeScript compiler module\n" +
+         "    extensions: [\"ts\"]     # default extensions for TypeScript files\n" +
+         "    module: null           # how compiled tyepscript is wrapped, defaults to no wrapping,\n" +
+         "                           # can be \"amd\" or \"commonjs\"\n";
 };
 
 exports.validate = function( config, validators ) {

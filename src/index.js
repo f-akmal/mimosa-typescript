@@ -3,7 +3,7 @@
 var fs = require( "fs" )
   , path = require( "path" )
   , logger = null
-  , config = require( './config' )
+  , config = require( "./config" )
   , io = null
   , TypeScript = null
   , compilationSettings = null
@@ -55,7 +55,7 @@ var compile = function ( mimosaConfig, file, cb ) {
             outText += str;
           },
           WriteLine: function (str) {
-            outText += str + '\r\n';
+            outText += str + "\r\n";
           } ,
           Close: function(){}
         };
@@ -74,7 +74,7 @@ var compile = function ( mimosaConfig, file, cb ) {
 
   var stderr = {
     Write: function ( str ) { errorMessage += str; },
-    WriteLine: function ( str ) { errorMessage += str + '\r\n'; },
+    WriteLine: function ( str ) { errorMessage += str + "\r\n"; },
     Close: function ( str ) {}
   };
 
@@ -103,8 +103,8 @@ var compile = function ( mimosaConfig, file, cb ) {
   preEnv.code.push( new TypeScript.SourceUnit( defaultLibPath, null ) );
   preEnv.code.push( new TypeScript.SourceUnit( file.inputFileName, null ) );
   preEnv.code.forEach( function ( code ) {
-    var path = TypeScript.switchToForwardSlashes( io.resolvePath( code.path ) );
-    resolver.resolveCode( path, "", false, resolutionDispatcher );
+    var pathh = TypeScript.switchToForwardSlashes( io.resolvePath( code.path ) );
+    resolver.resolveCode( pathh, "", false, resolutionDispatcher );
   });
 
   resolvedEnv.code.forEach( function ( code ) {
