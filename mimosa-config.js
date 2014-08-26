@@ -6,7 +6,6 @@ exports.config = {
     javascriptDir: null
   },
   eslint: {
-    exclude: [/\/resources\//],
     options: {
       rules: {
         "no-global-strict": 0,

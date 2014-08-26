@@ -2,140 +2,91 @@
 
 var fs = require( "fs" )
   , path = require( "path" )
-  , logger = null
   , config = require( "./config" )
-  , io = null
-  , TypeScript = null
-  , compilationSettings = null
-  , defaultLibPath = null
+  , ts
+  , libSnapshot
+  , lib
+  , settings
+  , scriptDetect
   , getExtensions = function ( mimosaConfig ) {
-    logger = mimosaConfig.log;
     return mimosaConfig.typescript.extensions;
   };
 
-var _setupTypeScript = function ( mimosaConfig ) {
-  io = require( "./resources/io" );
-  TypeScript = require( "./resources/typescript" );
-  defaultLibPath = path.join( __dirname, "resources", "lib.d.ts" );
-
-  compilationSettings = new TypeScript.CompilationSettings();
-  compilationSettings.codeGenTarget = TypeScript.CodeGenTarget.ES5;
-  compilationSettings.errorRecovery = true;
-
-  if ( mimosaConfig.typescript && mimosaConfig.typescript.module ) {
-    if ( mimosaConfig.typescript.module === "commonjs" ) {
-      TypeScript.moduleGenTarget = TypeScript.ModuleGenTarget.Synchronous;
-    } else {
-      if ( mimosaConfig.typescript.module === "amd" ) {
-        TypeScript.moduleGenTarget = TypeScript.ModuleGenTarget.Asynchronous;
-      }
-    }
-  }
+var _tsSettings = function( tsOptions ) {
+  var st = new ts.CompilationSettings();
+  st.codeGenTarget = tsOptions.codeGenTarget || 1; // EcmaScript 5
+  st.moduleGenTarget = tsOptions.moduleGenTarget || 1; // commonjs
+  st.syntacticErrors = tsOptions.syntacticErrors || true;
+  st.semanticErrors = tsOptions.semanticErrors || true;
+  return ts.ImmutableCompilationSettings.fromCompilationSettings( st );
 };
 
+var _setup = function( tsOptions ) {
+  ts = require( "typescript-api" );
+  scriptDetect = new RegExp( ts.tripleSlashReferenceRegExp.source, "gm" );
+  settings = _tsSettings( tsOptions );
+  lib = path.resolve( require.resolve( "typescript" ), "../lib.d.ts" );
+  libSnapshot = ts.ScriptSnapshot.fromString( fs.readFileSync( lib, "utf-8" ) );
+};
+
+var _compileTs = function ( file, data ) {
+  var compiler = new ts.TypeScriptCompiler( new ts.NullLogger(), settings );
+  compiler.addFile( lib, libSnapshot );
+
+  var fullData = data.replace( scriptDetect, function(match, p1, p2, filename) {
+    var filePath = path.join( path.dirname( file) , filename );
+    return fs.readFileSync( filePath );
+  });
+
+  var snapshot = ts.ScriptSnapshot.fromString( fullData );
+  compiler.addFile( file, snapshot );
+
+  var it = compiler.compile()
+    , result
+    , current
+    , error
+    , output;
+
+  while (it.moveNext()) {
+    result = it.current();
+
+    for (var i = 0; i < result.diagnostics.length; i++) {
+      var diagnostic = result.diagnostics[i];
+      if ( !error ) {
+        error = "";
+      }
+      error += diagnostic.fileName() + ": " + diagnostic.line() + ": " + diagnostic.character() + ": " + diagnostic.message();
+      var badLine = fullData.split( "\n" )[diagnostic.line()];
+      error += "\n" + badLine + "\n";
+      error += new Array( diagnostic.character() + 1 ).join( " " ) + "^\n\n";
+    }
+
+    for (var k = 0; k < result.outputFiles.length; k++) {
+      current = result.outputFiles[k];
+      if (!current) {
+        continue;
+      }
+      if ( !output ) {
+        output = "";
+      }
+      output += current.text;
+    }
+  }
+
+  return {
+    error: error,
+    text: output
+  };
+};
+
+
 var compile = function ( mimosaConfig, file, cb ) {
-  var error
-    , outText = ""
-    , errorMessage = ""
-    , resolvedPaths = {};
-
-  if (!TypeScript) {
-    _setupTypeScript( mimosaConfig );
+  if ( !ts ) {
+    _setup( mimosaConfig.typescript );
   }
 
-  var targetJsFile = file.outputFileName.replace( mimosaConfig.watch.compiledDir, mimosaConfig.watch.sourceDir );
-  targetJsFile = io.resolvePath( targetJsFile );
-  targetJsFile = TypeScript.switchToForwardSlashes( targetJsFile );
-
-  var emitterIOHost = {
-    createFile: function ( fileName, useUTF8 ) {
-      if ( fileName === targetJsFile ) {
-        return {
-          Write: function (str) {
-            outText += str;
-          },
-          WriteLine: function (str) {
-            outText += str + "\r\n";
-          } ,
-          Close: function(){}
-        };
-      } else {
-        return {
-          Write: function ( str ) {},
-          WriteLine: function ( str ) {},
-          Close: function () {}
-        };
-      }
-    },
-    directoryExists: io.directoryExists,
-    fileExists: io.fileExists,
-    resolvePath: io.resolvePath
-  };
-
-  var stderr = {
-    Write: function ( str ) { errorMessage += str; },
-    WriteLine: function ( str ) { errorMessage += str + "\r\n"; },
-    Close: function ( str ) {}
-  };
-
-  var preEnv = new TypeScript.CompilationEnvironment( compilationSettings, io );
-  var resolver = new TypeScript.CodeResolver( preEnv );
-  var resolvedEnv = new TypeScript.CompilationEnvironment( compilationSettings, io );
-  var compiler = new TypeScript.TypeScriptCompiler( stderr, new TypeScript.NullLogger(), compilationSettings );
-  compiler.setErrorOutput( stderr );
-
-  if ( compilationSettings.errorRecovery ) {
-    compiler.parser.setErrorRecovery( stderr );
-  }
-
-  var resolutionDispatcher = {
-    postResolutionError: function ( errorFile, line, col, errorMessage ) {
-      stderr.WriteLine( errorFile + "(" + line + "," + col + ") " + ( errorMessage === "" ? "" : ": " + errorMessage ) );
-    },
-    postResolution: function ( path, code ) {
-      if ( !resolvedPaths[path] ) {
-        resolvedEnv.code.push( code );
-        resolvedPaths[path] = true;
-      }
-    }
-  };
-
-  preEnv.code.push( new TypeScript.SourceUnit( defaultLibPath, null ) );
-  preEnv.code.push( new TypeScript.SourceUnit( file.inputFileName, null ) );
-  preEnv.code.forEach( function ( code ) {
-    var pathh = TypeScript.switchToForwardSlashes( io.resolvePath( code.path ) );
-    resolver.resolveCode( pathh, "", false, resolutionDispatcher );
-  });
-
-  resolvedEnv.code.forEach( function ( code ) {
-    if (code.content !== null) {
-      compiler.addUnit( code.content, code.path, false, code.referencedFiles );
-    }
-  });
-
-  try {
-    compiler.typeCheck();
-    compiler.emit( emitterIOHost, function ( unitIndex, outFile ) {
-      preEnv.inputOutputMap[unitIndex] = outFile;
-    });
-  } catch ( err ) {
-    compiler.errorReporter.hasErrors = true;
-  }
-
-  if ( errorMessage.length > 0 ) {
-    error = new Error( errorMessage );
-  } else {
-    error = null;
-  }
-
-  if ( /.d.ts$/.test( file.inputFileName ) && outText === "" ) {
-    outText = undefined;
-    if ( !error ) {
-      logger.success( "Compiled [[ " + file.inputFileName + " ]]" );
-    }
-  }
-
-  cb( error, outText );
+  var result = _compileTs( file.inputFileName, file.inputFileText );
+  cb( result.error, result.text );
 };
 
 module.exports = {

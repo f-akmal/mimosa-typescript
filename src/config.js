@@ -3,8 +3,7 @@
 exports.defaults = function() {
   return {
     typescript: {
-      extensions: ["ts"],
-      module: null
+      extensions: ["ts"]
     }
   };
 };
@@ -12,17 +11,15 @@ exports.defaults = function() {
 exports.placeholder = function() {
   return "\t\n\n" +
          "  typescript:              # config settings for the TypeScript compiler module\n" +
-         "    extensions: [\"ts\"]     # default extensions for TypeScript files\n" +
-         "    module: null           # how compiled tyepscript is wrapped, defaults to no wrapping,\n" +
-         "                           # can be \"amd\" or \"commonjs\"\n";
+         "    lib: undefined         # use this property to provide a specific version of\n" +
+         "                           # the TypeScript compiler\n" +
+         "    extensions: [\"ts\"]     # default extensions for TypeScript files\n";
 };
 
 exports.validate = function( config, validators ) {
   var errors = [];
 
   if ( validators.ifExistsIsObject( errors, "typescript config", config.typescript ) ) {
-
-    validators.ifExistsIsString( errors, "typescript.module", config.typescript.module );
 
     if ( validators.isArrayOfStringsMustExist( errors, "typescript.extensions", config.typescript.extensions ) ) {
       if (config.typescript.extensions.length === 0) {
