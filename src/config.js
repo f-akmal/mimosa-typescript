@@ -11,8 +11,6 @@ exports.defaults = function() {
 exports.placeholder = function() {
   return "\t\n\n" +
          "  typescript:              # config settings for the TypeScript compiler module\n" +
-         "    lib: undefined         # use this property to provide a specific version of\n" +
-         "                           # the TypeScript compiler\n" +
          "    extensions: [\"ts\"]     # default extensions for TypeScript files\n";
 };
 
