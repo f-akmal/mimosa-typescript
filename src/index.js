@@ -14,10 +14,10 @@ var fs = require( "fs" )
 
 var _tsSettings = function( tsOptions ) {
   var st = new ts.CompilationSettings();
-  st.codeGenTarget = tsOptions.codeGenTarget || 1; // EcmaScript 5
-  st.moduleGenTarget = tsOptions.moduleGenTarget || 1; // commonjs
-  st.syntacticErrors = tsOptions.syntacticErrors || true;
-  st.semanticErrors = tsOptions.semanticErrors || true;
+
+  st.codeGenTarget = tsOptions.codeGenTarget;
+  st.moduleGenTarget = tsOptions.moduleGenTarget;
+  st.gatherDiagnostics = true;
   return ts.ImmutableCompilationSettings.fromCompilationSettings( st );
 };
 
@@ -33,12 +33,14 @@ var _compileTs = function ( file, data ) {
   var compiler = new ts.TypeScriptCompiler( new ts.NullLogger(), settings );
   compiler.addFile( lib, libSnapshot );
 
-  var fullData = data.replace( scriptDetect, function(match, p1, p2, filename) {
-    var filePath = path.join( path.dirname( file) , filename );
-    return fs.readFileSync( filePath );
+  data.replace( scriptDetect, function(match, p1, p2, filename) {
+    var fullFilePath = path.join( path.dirname( file) , filename );
+    var text = fs.readFileSync( fullFilePath ).toString();
+    var importSnap = ts.ScriptSnapshot.fromString( text );
+    compiler.addFile( filename, importSnap );
   });
 
-  var snapshot = ts.ScriptSnapshot.fromString( fullData );
+  var snapshot = ts.ScriptSnapshot.fromString( data );
   compiler.addFile( file, snapshot );
 
   var it = compiler.compile()
@@ -56,7 +58,7 @@ var _compileTs = function ( file, data ) {
         error = "";
       }
       error += diagnostic.fileName() + ": " + diagnostic.line() + ": " + diagnostic.character() + ": " + diagnostic.message();
-      var badLine = fullData.split( "\n" )[diagnostic.line()];
+      var badLine = data.split( "\n" )[diagnostic.line()];
       error += "\n" + badLine + "\n";
       error += new Array( diagnostic.character() + 1 ).join( " " ) + "^\n\n";
     }
@@ -79,10 +81,9 @@ var _compileTs = function ( file, data ) {
   };
 };
 
-
 var compile = function ( mimosaConfig, file, cb ) {
   if ( !ts ) {
-    _setup( mimosaConfig.typescript );
+    _setup( mimosaConfig.typescript.options );
   }
 
   var result = _compileTs( file.inputFileName, file.inputFileText );
