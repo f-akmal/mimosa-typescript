@@ -11,6 +11,8 @@ For more information regarding Mimosa, see http://mimosa.io
 
 Add `'typescript'` to your list of modules.  That's all!  Mimosa will install the module for you when you start `mimosa watch` or `mimosa build`.
 
+This module works best with Mimosa `2.3.8` or above.
+
 ## Functionality
 
 This module will compile Typescript files during `mimosa watch` and `mimosa build`.

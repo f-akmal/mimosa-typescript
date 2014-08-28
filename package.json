@@ -1,9 +1,9 @@
 {
   "name": "mimosa-typescript",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "homepage": "https://github.com/dbashford/mimosa-typescript",
   "author": "David Bashford",
-  "description": "A Typescript compiler for Mimosa 2.0+",
+  "description": "A Typescript compiler for Mimosa",
   "contributors": [
     {
       "name": "David Bashford",
@@ -22,7 +22,9 @@
     "mimosa",
     "mmodule",
     "typescript",
-    "compiler"
+    "compiler",
+    "source",
+    "maps"
   ],
   "license": "MIT",
   "main": "./src",
