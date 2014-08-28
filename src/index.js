@@ -17,6 +17,7 @@ var _tsSettings = function( tsOptions ) {
 
   st.codeGenTarget = tsOptions.codeGenTarget;
   st.moduleGenTarget = tsOptions.moduleGenTarget;
+  st.mapSourceFiles = tsOptions.mapSourceFiles;
   st.gatherDiagnostics = true;
   return ts.ImmutableCompilationSettings.fromCompilationSettings( st );
 };
@@ -47,7 +48,8 @@ var _compileTs = function ( file, data ) {
     , result
     , current
     , error
-    , output;
+    , output
+    , map;
 
   while (it.moveNext()) {
     result = it.current();
@@ -63,21 +65,33 @@ var _compileTs = function ( file, data ) {
       error += new Array( diagnostic.character() + 1 ).join( " " ) + "^\n\n";
     }
 
+    var reFileName = file.replace( path.extname(file), "") + ".js";
     for (var k = 0; k < result.outputFiles.length; k++) {
       current = result.outputFiles[k];
-      if (!current) {
+      if ( !current ) {
         continue;
       }
-      if ( !output ) {
-        output = "";
+      var name = current.name;
+      if ( name === reFileName ) {
+        output = current.text;
       }
-      output += current.text;
+      if ( name === reFileName + ".map" ) {
+        map = current.text;
+      }
     }
+  }
+
+  // let mimosa core handle source maps, strip it out
+  if ( map ) {
+    output = output.split("\n").map( function( line ) {
+      return line.replace(/^\/\/# [A-Za-z0-9\.=_-]+/, "");
+    }).join("\n");
   }
 
   return {
     error: error,
-    text: output
+    text: output,
+    map: map
   };
 };
 
@@ -87,7 +101,7 @@ var compile = function ( mimosaConfig, file, cb ) {
   }
 
   var result = _compileTs( file.inputFileName, file.inputFileText );
-  cb( result.error, result.text );
+  cb( result.error, result.text, mimosaConfig.typescript, result.map );
 };
 
 module.exports = {
