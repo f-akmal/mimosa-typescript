@@ -21,6 +21,7 @@ exports.placeholder = function() {
   return "\t\n\n" +
          "  typescript:                    # config settings for the TypeScript compiler module\n" +
          "    compileVendorDefinitionFiles: # whether or not to compile vendor .d.ts files\n" +
+         "                                 # requires v2.3.8 of mimosa to work\n" +
          "    extensions: [\"ts\"]         # default extensions for TypeScript files\n" +
          "    sourceMapDynamic: true       # whether or not to inline the source maps in the compiled JavaScript\n" +
          "    sourceMapExclude: [/\\/specs?\\//, /_spec.js$/] # files to exclude from source map generation\n" +
@@ -43,6 +44,8 @@ exports.validate = function( config, validators ) {
         errors.push( "typescript.extensions cannot be an empty array");
       }
     }
+
+    validators.ifExistsIsBoolean( errors, "typescript.compileVendorDefinitionFiles", config.typescript.compileVendorDefinitionFiles );
 
     if ( validators.isObject( errors, "typescript config", config.typescript.options ) ) {
       var opts = config.typescript.options;
