@@ -3,6 +3,7 @@
 exports.defaults = function() {
   return {
     typescript: {
+      compileVendorDefinitionFiles: false,
       extensions: ["ts"],
       sourceMapDynamic: true,
       sourceMapExclude: [/\/specs?\//, /_spec.js$/],
@@ -18,17 +19,18 @@ exports.defaults = function() {
 
 exports.placeholder = function() {
   return "\t\n\n" +
-         "  typescript:                  # config settings for the TypeScript compiler module\n" +
+         "  typescript:                    # config settings for the TypeScript compiler module\n" +
+         "    compileVendorDefinitionFiles: # whether or not to compile vendor .d.ts files\n" +
          "    extensions: [\"ts\"]         # default extensions for TypeScript files\n" +
-         "    sourceMapDynamic: true   # whether or not to inline the source maps in the compiled JavaScript\n" +
+         "    sourceMapDynamic: true       # whether or not to inline the source maps in the compiled JavaScript\n" +
          "    sourceMapExclude: [/\\/specs?\\//, /_spec.js$/] # files to exclude from source map generation\n" +
-         "    sourceMapConditional: false # whether or not to use conditional source maps\n" +
-         "    options:                   # options for the typescript compiler\n" +
-         "      codeGenTarget: 1         # ECMAScript version code is compiled to\n" +
-         "                               # 0 = ES3, 1 = ES5\n" +
-         "      moduleGenTarget: 2       # How the compiled output is wrapped\n" +
-         "                               # 0 = None, 1 = commonjs, 2 = AMD\n" +
-         "      mapSourceFiles: true     # whether or not to generate source maps\n";
+         "    sourceMapConditional: false  # whether or not to use conditional source maps\n" +
+         "    options:                     # options for the typescript compiler\n" +
+         "      codeGenTarget: 1           # ECMAScript version code is compiled to\n" +
+         "                                 # 0 = ES3, 1 = ES5\n" +
+         "      moduleGenTarget: 2         # How the compiled output is wrapped\n" +
+         "                                 # 0 = None, 1 = commonjs, 2 = AMD\n" +
+         "      mapSourceFiles: true       # whether or not to generate source maps\n";
 };
 
 exports.validate = function( config, validators ) {

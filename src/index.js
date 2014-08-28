@@ -36,7 +36,7 @@ var _compileTs = function ( file, data ) {
 
   data.replace( scriptDetect, function(match, p1, p2, filename) {
     var fullFilePath = path.join( path.dirname( file) , filename );
-    var text = fs.readFileSync( fullFilePath ).toString();
+    var text = fs.readFileSync( fullFilePath, "utf8" );
     var importSnap = ts.ScriptSnapshot.fromString( text );
     compiler.addFile( filename, importSnap );
   });
@@ -100,8 +100,14 @@ var compile = function ( mimosaConfig, file, cb ) {
     _setup( mimosaConfig.typescript.options );
   }
 
-  var result = _compileTs( file.inputFileName, file.inputFileText );
-  cb( result.error, result.text, mimosaConfig.typescript, result.map );
+  if ( mimosaConfig.typescript.compileVendorDefinitionFiles || 
+    ( file.isVendor === false || file.isVendor === undefined ) ) {
+    var result = _compileTs( file.inputFileName, file.inputFileText );
+    cb( result.error, result.text, mimosaConfig.typescript, result.map );
+  } else {
+    // vendor file,
+    cb( undefined, undefined, mimosaConfig.typescript, undefined );
+  }
 };
 
 module.exports = {
