@@ -100,8 +100,14 @@ var compile = function ( mimosaConfig, file, cb ) {
     _setup( mimosaConfig.typescript.options );
   }
 
-  if ( mimosaConfig.typescript.compileVendorDefinitionFiles || 
-    ( file.isVendor === false || file.isVendor === undefined ) ) {
+  if (
+    mimosaConfig.typescript.compileVendorDefinitionFiles
+    ||
+    !file.inputFileName.test(/\.d\.ts$/)
+    ||
+    ( file.isVendor === false ||
+      file.isVendor === undefined ) 
+  ) {
     var result = _compileTs( file.inputFileName, file.inputFileText );
     cb( result.error, result.text, mimosaConfig.typescript, result.map );
   } else {
