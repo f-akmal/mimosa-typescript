@@ -103,10 +103,10 @@ var compile = function ( mimosaConfig, file, cb ) {
   if (
     mimosaConfig.typescript.compileVendorDefinitionFiles
     ||
-    !file.inputFileName.test(/\.d\.ts$/)
+    !/\.d\.ts$/.test(file.inputFileName)
     ||
     ( file.isVendor === false ||
-      file.isVendor === undefined ) 
+      file.isVendor === undefined )
   ) {
     var result = _compileTs( file.inputFileName, file.inputFileText );
     cb( result.error, result.text, mimosaConfig.typescript, result.map );
