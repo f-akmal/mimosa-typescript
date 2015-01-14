@@ -1,6 +1,6 @@
 {
   "name": "mimosa-typescript",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "homepage": "https://github.com/dbashford/mimosa-typescript",
   "author": "David Bashford",
   "description": "A Typescript compiler for Mimosa",
@@ -15,8 +15,8 @@
     "url": "https://github.com/dbashford/mimosa-typescript"
   },
   "dependencies": {
-    "typescript-api": "~1.0.0",
-    "typescript": "~1.0.0"
+    "typescript-api": "1.0.0",
+    "typescript": "1.0.0"
   },
   "keywords": [
     "mimosa",
