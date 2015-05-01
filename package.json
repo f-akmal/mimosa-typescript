@@ -15,8 +15,7 @@
     "url": "https://github.com/dbashford/mimosa-typescript"
   },
   "dependencies": {
-    "typescript-api": "1.0.0",
-    "typescript": "1.0.0"
+    "typescript": "^1.5.0-beta"
   },
   "keywords": [
     "mimosa",
