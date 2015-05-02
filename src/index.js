@@ -38,9 +38,9 @@ var compile = function(mimosaConfig, file, cb){
 		var lineAndCharacter = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
 		var line = lineAndCharacter.line + 1;
 		var character = lineAndCharacter.character + 1;
-		var fName = path.basename(file.inputFileName);
-//		return fName + '(' + line + ',' + character + '): TS' + diagnostic.code + ': ' + diagnostic.messageText + '\n';
-		return diagnostic.messageText + '\n';
+//		var fName = path.basename(file.inputFileName);
+		return '(' + line + ',' + character + '): TS' + diagnostic.code + ': ' + diagnostic.messageText + '\n';
+//		return diagnostic.messageText + '\n';
 	});
 	
 	if (errors.length) {
